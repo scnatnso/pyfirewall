@@ -1,0 +1,69 @@
+#!/bin/bash
+#
+# PROGRAM-NAME: pyfirewall
+# VERSION: (Ver.0.12) Tuesday, 14 August 2012
+# DESCRIPTION: this is terminal command for run firewall in /etc/rc.d/rc.firewall
+# AUTHOR: Gianluca Pernigotto <jeanlucperni@gmail.com>
+# 
+# Copyright 2012  Gianluca PernigottoAll rights reserved.
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ''AS IS'' AND ANY EXPRESS OR IMPLIED
+# WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+# EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+if [ $(id -u) -ne 0 ]; then
+        echo -e "\nPermission denied\n"
+        exit 1
+fi
+
+path1=/etc/rc.d/rc.firewall
+path2=/etc/pyfirewall/0.12
+path3=/etc/sysctl.conf
+
+if [ ! -e "$path1" ]; then
+	echo -e "[ERROR]: $path1\nFile di avvio mancante"
+	exit 1
+elif [ ! -e "$path2/parser_loader" ]; then
+	echo -e "[ERROR]: $path2/parser_loader\nFile di configurazione mancante"
+	exit 1
+elif [ ! -e "$path2/rules_single_interface.conf" ]; then
+	echo -e "[ERROR]: $path2/rules_single_interface.conf\nFile di configurazione mancante"
+	exit 1
+elif [ ! -e "$path2/rules_multi_interfaces.conf" ]; then
+	echo -e "[ERROR]: $path2/rules_multi_interfaces.conf\nFile di configurazione mancante"
+	exit 1
+elif [ ! -e "$path3" ]; then
+	echo -e "[WARNING]: $path3\nFile mancante"
+fi
+
+bool=0
+for n in {"$path1","$path2/parser_loader","$path2/rules_single_interface.conf","$path2/rules_multi_interfaces.conf"}                      
+do
+	if [ ! -x "$n" ]; then
+		bool=1
+		echo -e "\n [WARNING]: $n\n Manca il permesso di esecuzione."
+		echo -e " Non posso eseguire l'avvio del programma:"		
+	fi		
+done
+
+if [ $bool = 1 ]; then
+	exit 1
+fi	
+
+
+/etc/rc.d/rc.firewall $1
+
+exit 0
+

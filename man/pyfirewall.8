@@ -1,0 +1,147 @@
+.TH PYfirewall 8
+.SH NOME:
+.B pyfirewall
+\- Firewall stateful interattivo e personalizzabile a command-line completamente basato su iptables. 
+.SH SINTASSI:
+.B pyfirewall [ARG] {start|stop|block|restart|reload|status|setting|version}
+
+.SH DESCRIZIONE:
+Pyfirewall è un programma firewall (statefull) basato su iptables, senza 
+interfaccia grafica, scritto in python e bash, che filtra e limita i pacchetti 
+che attraversano la rete internet tutelando così il proprio ambiente Gnu/
+Linux. Quando installato funziona con tutte le interfaccie di rete 
+(eth, wireless, etc) di un singolo pc in una normale rete adsl domestica,
+tuttavia è configurabile per ogni tipo di interfaccia (o più interfaccie)
+attraverso il suo file di configurazione situato in '/etc/pyfirewall/0.12/iface.conf'.
+
+Offre veloci possibilità di personalizzazioni guidate: blocco degli IP 
+(source, destination), impostazioni porte tcp/udp (aperture, chiusure)
+ed eventuale eliminazione di ogni personale regola impostata senza che
+l'utente usi direttamente i comandi di iptables. 
+
+L'algoritmo del programma sta nello scrivere, trovare e leggere i dati, cioè gli
+elenchi delle regole che gli abbiamo sottoscritto, memorizzarli in un database
+e passarli a iptables automatizzandone il caricamento affinchè da noi non vengono
+rimossi o cambiati. Le regole vengono attivate al momento della loro sottoscrizione
+e nel corso di ogni riavvio del sistema e del programma stesso.
+
+.SH NOTE:
+Per una configurazione approfondita tipo 'server' si rende necessaria la 
+personalizzazione del file per interfaccia singola '/etc/pyfirewall/0.12/rules_single_interface.conf'
+o per più interfaccie '/etc/pyfirewall/0.12/rules_multi_interfaces.conf', questo è incoraggiato
+anche per una configurazione non necessariamente da 'server' ma solo
+semplicemente personalizzata (attualmente il firewall è impostato per un uso generale da desktop).
+
+Si sappia che per l'anciare il programma nel proprio ambiente è necessario
+farlo con i privilegi di amministrazione e invocarlo dalla shell
+semplicemente con il comando 'pyfirewall'.
+.TP
+.I sysctl.conf
+Il file di configurazione 'sysctl.conf' (/etc/sysctl.conf), viene installato e settato
+con i parametri di sicurezza network del kernel già attivi, il consiglio è
+di rivedere la sua configurazione, sebbene sia già buona nella magior parte dei casi.
+Si ricorda che il comando per inizializzare questo file è '/sbin/sysctl -p'
+
+.SH ARGOMENTI:
+I seguenti argomenti vanno passati dopo il nome del programma:
+.TP
+.B start
+Inizializza il firewall, quando messo in stop o in block. Questo argomento viene
+chiamato automaticamente anche dal sistema durannte il boot, oltre che essere usato dall'
+utenza di amministrazione.    
+.TP
+.B stop
+Ferma il firewall e resetta tutte le regole globali e quelle personali
+riportando il sistema allo stato iniziale. Questo ha un effetto transitorio in quanto
+al riavvio viene ripristinato lo stato "start" del firewall dello script di avvio. 
+Questa opzione non rimuove gli elenchi delle proprie regole personali le quali vengono 
+richiamate nelle riattivazione/ripristino. 
+.TP
+.B block
+Blocca tutte le connessioni entranti (INPUT), uscenti (OUTPUT) e interne (FORWARD).
+La navigazione internet non sarà possibile, così come ogni comunicazione di rete.
+Anche questo ha un effetto transitorio in quanto al riavvio viene ripristinato lo stato "start" del firewall 
+e non rimuove gli elenchi delle proprie regole personali le quali vengono richiamate nelle riattivazione/ripristino. 
+.TP
+.B restart
+Esegue uno stop e uno start, usabile in determinate circostanze; quando si modifica 
+i file di configurazione le personalizzazioni del setting.
+.TP
+.B reload
+Come restart, una sua variante.
+.TP
+.B status
+Mostra lo status del firewall elencando le regole globali visualizzabili
+anche nelle opzioni di setting.
+.TP
+.B setting
+Questo argomento richiama un menu interattivo per le personalizzazioni del proprio firewall (vedere il paragrafo OPZIONI).
+.TP
+.B version
+Mostra la versione, la data del programma e l'autore.
+.PP 
+
+.SH OPZIONI:
+.I Questa lista di opzioni vengono visualizzate nel menu interattivo di setting:
+.TP
+.B |1|   Blocca siti non graditi (indirizzo ip):
+Il blocco di alcuni siti non graditi avviene immettendo la nuova regola con l'indirizzo IP.
+L'indirizzo IP di un sito può essere trovato in vari modi: con il comando 'host', con il comando 'whois' o 
+con il comando 'dig', seguiti dall'host-name del sito. Ogni blocco pù essere eseguito come |s| source, 
+cioè dall'host al proprio pc, come |d| destination, cioè dal proprio pc all'host, oppure su entrambi i modi |s|d|.
+Alcuni siti sono provvisti da più indirizzi IP solitamente con numerazione progressiva. Potrebbe essere 
+opportuno immettere un intervallo per esempio: 192.000.000.20/192.000.000.24 per coprire il range.
+Si consiglia di svuotare i dati dal proprio browser per rendere effettive le nuove regole.
+.TP
+.B |2|   Cancella regole siti non graditi (indirizzo ip):
+La procedura per rimuovere le regole avviene similmente a quella della sottoscrizione, cioè immettendo
+l'indirizzo IP e indicando il match (|s|,|d| o |s|d|). 
+.TP
+.B |3|   Visualizza le liste dei siti bloccati |s| e |d|:
+Per una vista d'insieme di tutti i siti che si sono voluti bloccare si usa questa opzione. In ogni caso
+durante una sottoscrizione o una rimozione della stessa verrà visualizzata sempre una lista di appartenenza
+al tipo di match.
+.TP
+.B |4|   Aperture/chiusura delle porte sui protocolli tcp/udp:
+Le porte TCP/UDP sono tutte controllate dalle nuove chain (N TCP, N UDP) impostate 
+in modo predefinito nel file di configurazione del firewall. E' possibile operare per poter aprire,
+chiudere determinate porte o eliminare delle regole impostate con l'opzione 'setting'. Ogni regola è costituita da tre target
+(drop, accept, reject) che determinano l'azione sulla porta: drop rifiuta e scarta il
+pacchetto, accept lo consente e reject lo respinge al mittente. Qui le porte devono essere
+indicate con un valore numerico (o una lista di numeri porte delimitati da una virgola fino ad un massimo di 15) o un range (8990:9000), 
+dei protocolli (TCP/UDP) e un target (DROP, REJECT, ACCEPT).
+Per includere un intervallo di porte usa per esempio 6890:6895
+I range possono essere inclusi in una lista sempre fino a un massimo di 15.
+
+Talvolta, può occorrere, che per reindirizzare le aperture delle porte sui protocolli 
+si voglia specificare determinati IP. Questo è opportuno farlo direttamente sui file
+di configurazione citati sulle NOTE sopra. Alcuni esempi potrebbero essere i seguenti:
+ 
+.B "iptables -A TCP -p tcp --dport 53 -s 192.168.1.0/24 -d 172.16.105.3 -j ACCEPT"
+ 
+.B "iptables -A UDP -p udp --dport 53 -s 192.168.1.0/24 -d 172.16.105.3 -j ACCEPT" 
+
+.B "iptables -A INPUT -i eth0 -p tcp -dport 110  -d 2.2.2.2 -j DROP"
+.TP
+.B |5|   Cancella regole precedentemente impostate tcp/udp
+La procedura per rimuovere le regole precedentemente sottoscritte avviene
+similmente a quella della loro sottoscrizione, cioè immettendo il numero
+della porta che sottointende la regola da eliminare. Per vedere quali regole
+sono già state sottoscritte, tornare al menu e usare l'opzione che visualizza
+la loro lista.
+.TP
+.B |7|   Lista tutte le impostazioni globali del firewall
+Mostra lo status del firewall elencando le regole globali visualizzabile anche
+con l'opzione 'pyfirewall status'.						
+	    
+.SH "SEE ALSO"
+.BR iptables (1), host (1), whois (1), dig (1)
+.SH AUTHORS 
+pyfirewall program, Package and this man page were written by Gianluca Pernigotto,
+Alias: Jean-Luc Pernigò <jeanlucperni@gmail.com> 
+Homepage: http://itamburiditux.blogspot.com/
+.SH COPYRIGHT
+Copyright  ©  2012  Free Software Foundation, Inc.  License GPLv3+: GNU
+GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
+This is free software: you are free  to  change  and  redistribute  it.
+There is NO WARRANTY, to the extent permitted by law.
