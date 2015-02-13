@@ -1,0 +1,143 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+#
+#########################################################
+# Name: firewall (script)
+# Porpose: firewall service daemon for linux system
+# Writer: Gianluca Pernigoto <jeanlucperni@gmail.com>
+# Copyright: (c) 2013-2015 Gianluca Pernigoto <jeanlucperni@gmail.com>
+# license: GPL3
+# Version: (V0.12) Tuesday, 14 August 2012
+# Rev (v0.13) 04/02/2015
+#########################################################
+
+"""
+This daemon is running during the system startup and if called with some 
+command arg, but However, for be running, it must have execution permissions .
+
+It must be locate in /etc/init.d or /etc/rc.d, this depend what init-systems
+is used: System V or BSD style .
+"""
+
+import os
+
+if os.getuid() != 0:
+	print "\n\n\033[31;1mPermission denied! Are you root?\033[0m"
+	sys.exit(1)
+
+from subprocess import check_call
+import sys
+from firewall_package.personalized_rules import main_menu, load_all, status
+
+USAGE = ("\033[1mUsage: pyfirewall "
+		 "{reload|restart|start|stop|block|status|settings|version}\033[0m")
+
+VERSION = '0.13'
+
+######################################################### start functions
+def start():
+	"""
+	During the Gnu/Linux OS startup, this is executed default.
+	Also, it is used like pyfirewall command argument from user
+	administrator
+	"""
+	print "\033[32;1mAttivazione Firewall:\033[0m"
+	
+	check_call('/etc/pyfirewall/%s/parser_loader start' % (VERSION), shell = True)
+	
+	print "\033[32;1m...[OK]\033[0m"
+	
+	load_all() # It run the need where are applied to all settings
+	
+	
+def stop():
+	"""
+	This can executed when Gnu/Linux OS it has an shutdown or an reboot .
+	Note that in some OS maybe is need to add the following lines to 
+	/etc/rc.d/rc.local_shutdown:
+	
+	# Stop pyfirewall
+	if [ -x /etc/rc.d/rc.firewall ]; then
+	  /etc/rc.d/rc.firewall stop
+	fi
+	"""
+	print "\033[31;1mDisattivazione Firewall:\033[0m"
+	
+	check_call('/etc/pyfirewall/%s/parser_loader stop' % (VERSION), shell = True)
+	
+	print "\033[31;1m...[OK]\033[0m"
+	
+########################################################## end functions
+	
+if len(sys.argv) == 1:
+	
+	print "\n\033[1mIl programma necessita di un argomento/parametro:\033[0m"
+	
+	sys.exit(USAGE)
+
+if len(sys.argv) == 2: 
+
+	if sys.argv[1] == "restart" or sys.argv[1] == "reload":
+		
+		stop()
+		
+		start()
+		
+		sys.exit()
+		
+	elif sys.argv[1] == "start":
+		
+		start()
+		
+		sys.exit()
+		
+	elif sys.argv[1] == "stop":
+		
+		stop()
+		
+		sys.exit()
+		
+	elif sys.argv[1] == "block":
+		"""
+		WARNING: This prevents all internet connections
+		See parser_loader script for explanation
+		"""
+		print "\033[31;1mAttenzione, blocco globale impostato:\033[0m"
+		
+		check_call('/etc/pyfirewall/%s/parser_loader block' % (VERSION), shell = True)
+		
+		print "\033[31;1m...[OK]\033[0m"
+		
+		sys.exit()
+		
+	elif sys.argv[1] == "status":
+		
+		status()
+		
+		sys.exit()
+		
+	elif sys.argv[1] == "settings":
+		
+		main_menu()
+		
+		sys.exit()
+		
+	elif sys.argv[1] == "version" or sys.argv[1] == "-v":
+		
+		print "pyfirewall: Version 0.13 date 04/02/2015 (C) 2015 Gianluca Pernigotto."
+		
+		sys.exit()
+		
+		
+	else:
+		
+		sys.exit(USAGE)
+
+if len(sys.argv) > 2: 
+	
+	print "\033[1mIl programma accetta solo un argomento alla volta;\033[0m"
+	
+	sys.exit(USAGE)
+	
+sys.exit()

@@ -29,8 +29,9 @@ if [ $(id -u) -ne 0 ]; then
         exit 1
 fi
 
+version=0.13
 ipt=`which iptables`
-path2=/etc/pyfirewall/0.12
+path2=/etc/pyfirewall/$version
 
 if [ "$1" = "start" ]; then
 
@@ -38,23 +39,23 @@ if [ "$1" = "start" ]; then
 
 	if [[ "$sett" == "interface_all" ]]; then
 		inet=""
-		/etc/pyfirewall/0.12/rules_single_interface.conf "${inet}"
+		/etc/pyfirewall/$version/rules_single_interface.conf "${inet}"
 		exit 0
 
 
 	elif [[ "$sett" == "interface_match" ]]; then
 		inet=`sed 's/ *//g' $path2/iface.conf | grep '^interface' | sed '/^$/d' | sed -e '/^#/d' | sed -e 's/interface_match=//g'`
-		/etc/pyfirewall/0.12/rules_single_interface.conf "-i ${inet}"
+		/etc/pyfirewall/$version/rules_single_interface.conf "-i ${inet}"
 		exit 0
 
 	elif [[ "$sett" == "interface_list" ]]; then
 		inet=`cat $path2/iface.conf | grep '^interface' | sed '/^$/d' | sed -e '/^#/d' | sed -e 's/interface_list=//g'`
-		/etc/pyfirewall/0.12/rules_multi_interfaces.conf "${inet}"
+		/etc/pyfirewall/$version/rules_multi_interfaces.conf "${inet}"
 		exit 0
 
 	elif [[ "$sett" == "" ]]; then
 		inet=""
-		/etc/pyfirewall/0.12/rules_single_interface.conf "${inet}"
+		/etc/pyfirewall/$version/rules_single_interface.conf "${inet}"
 		exit 0
 
 

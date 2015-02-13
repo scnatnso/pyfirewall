@@ -21,13 +21,15 @@ from glob import glob
 import sys
 import os
 
-
-VERSION = '0.12'
+NAME = 'pyfirewall'
+VERSION = '0.13'
 LICENSE = 'Gnu GPL3 (See LICENSE)'
 DESCRIPTION = 'Firewall iptables based'
 
 LONG_DESCRIPTION = """Firewall for single machines with Gnu/Linux's OS.
 """
+URL = 'https://github.com/jeanslack/pyfirewall'
+
 
 def glob_files(pattern):
 	"""
@@ -39,26 +41,91 @@ def glob_files(pattern):
 
 
 
-def LINUX(distro):
+def  LINUX_SLACKWARE(id_distro, id_version):
 	
-	setup(name = 'pyfirewall',
+	setup(name = NAME,
 		version = VERSION,
 		description = DESCRIPTION,
 		long_description = LONG_DESCRIPTION,
 		author = 'Gianluca Pernigotto',
 		author_email = 'jeanlucperni@gmail.com',
-		url = 'https://github.com/jeanslack/pyfirewall',
+		url = URL,
 		license = LICENSE,
-		platforms = ['Linux (%s)' % (distro)],
+		platforms = ['Gnu/Linux (%s %s)' % (id_distro, id_version)],
 		packages = ['firewall_package'],
-		scripts = ['pyfirewall']
+		scripts = [NAME],
 		)
 		
 	
+def LINUX_DEBIAN_UBUNTU(id_distro, id_version):
+	"""
+		------------------------------------------------
+		setup build videomass debian package
+		------------------------------------------------
+		
+		TOOLS: 
+		apt-get install python-all python-stdeb fakeroot
+
+		USAGE: 
+		- for generate both source and binary packages :
+			python setup.py --command-packages=stdeb.command bdist_deb
+			
+		- Or you can generate source packages only :
+			python setup.py --command-packages=stdeb.command sdist_dsc
+			
+		RESOURCES:
+		- look at there for major info:
+			https://pypi.python.org/pypi/stdeb
+			http://shallowsky.com/blog/programming/python-debian-packages-w-stdeb.html
+	"""
+	
+	# this is DATA_FILE structure: 
+	# ('dir/file destination of the data', ['dir/file on current place sources']
+	# even path must be relative-path
+	DATA_FILES = [
+		('share/man/man8', ['man/pyfirewall.8.gz'],), 
+		('share/doc/python-pyfirewall', glob_files('docs/*'),),
+		('share/doc/python-pyfirewall', ['AUTHORS', 'BUGS', 'CHANGELOG', 
+											'COPYING', 'README.md', 'TODO']),
+		('/etc/init.d', ['config/demon/firewall'],),
+		('/etc/pyfirewall/%s' % VERSION, glob_files('config/rules/*'),),
+		('/etc/sysctl.d', ['config/sysctl.conf'],),
+				]
+	
+	DEPENDENCIES = ['python >=2.6']
+	
+	setup(name = NAME,
+		version = VERSION,
+		description = DESCRIPTION,
+		long_description = LONG_DESCRIPTION,
+		author = 'Gianluca Pernigotto',
+		author_email = 'jeanlucperni@gmail.com',
+		url = URL,
+		license = LICENSE,
+		platforms = ['Gnu/Linux (%s %s)' % (id_distro, id_version)],
+		scripts = [NAME],
+		packages = ['firewall_package'],
+		data_files = DATA_FILES,
+		install_requires = DEPENDENCIES,
+		)
+
+	
+##################################################
+
 if sys.platform.startswith('linux2'):
 	
-	distro = platform.linux_distribution()[0]
-	LINUX(distro)
+	dist_name = platform.linux_distribution()[0]
+	dist_version = platform.linux_distribution()[1]
 	
+	if dist_name == 'Slackware ':
+		LINUX_SLACKWARE(dist_name, dist_version)
+		
+	elif dist_name == 'debian' or dist_name == 'Ubuntu':
+		LINUX_DEBIAN_UBUNTU(dist_name, dist_version)
+		
+	else:
+		print 'this platform is not yet implemented: %s %s' % (dist_name, dist_version)
+		
+
 else:
 	print 'OS not supported'

@@ -1,0 +1,43 @@
+#! /bin/bash
+
+set -e
+
+# Arrange for a daemon to be started at system boot time
+echo -e "\nAggiorno i collegamenti dei runlevel per gli script di avvio in rc \n"
+update-rc.d firewall defaults >/dev/null
+
+if [ ! -d /etc/pyfirewall/0.12/private ]; then
+	mkdir /etc/pyfirewall/0.12/private
+	chmod 0700 /etc/pyfirewall/0.12/private
+fi
+
+if [ -e /etc/pyfirewall/0.12/rules_single_interface.conf ]; then
+	echo -e "Ripristino il file rules_single_interface.conf"	
+	rm /etc/pyfirewall/0.12/rules_single_interface.conf.new		
+else 
+	echo -e "Configuro il nuovo file rules_single_interface.conf"
+	mv /etc/pyfirewall/0.12/rules_single_interface.conf.new /etc/pyfirewall/0.12/rules_single_interface.conf	
+fi
+
+if [ -e /etc/pyfirewall/0.12/rules_multi_interfaces.conf ]; then
+	echo -e "Ripristino il file rules_multi_interfaces.conf"	
+	rm /etc/pyfirewall/0.12/rules_multi_interfaces.conf.new		
+else 
+	echo -e "Configuro il nuovo file rules_multi_interfaces.conf"
+	mv /etc/pyfirewall/0.12/rules_multi_interfaces.conf.new /etc/pyfirewall/0.12/rules_multi_interfaces.conf	
+fi
+
+
+if [ -e /etc/pyfirewall/0.12/iface.conf ]; then
+	echo -e "Ripristino il file iface.conf"	
+	rm /etc/pyfirewall/0.12/iface.conf.new
+else
+	echo -e "Configuro il nuovo file iface.conf"
+	mv /etc/pyfirewall/0.12/iface.conf.new /etc/pyfirewall/0.12/iface.conf	
+fi
+ 
+
+echo -e "\n Per attivare ora i parametri di sicurezza di rete dare:\n /sbin/sysctl -p /etc/sysctl.d/local10net.conf"
+echo -e "\n Il firewall ora non è avviato.\n Per avviarlo: 'pyfirewall start'\n Per l'uso leggi man pyfirewall \n"
+	
+exit 0
