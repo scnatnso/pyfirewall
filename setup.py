@@ -52,7 +52,7 @@ def  LINUX_SLACKWARE(id_distro, id_version):
 		url = URL,
 		license = LICENSE,
 		platforms = ['Gnu/Linux (%s %s)' % (id_distro, id_version)],
-		packages = ['firewall_package'],
+		packages = ['pyfirewall_pack'],
 		scripts = [NAME],
 		)
 		
@@ -88,7 +88,7 @@ def LINUX_DEBIAN_UBUNTU(id_distro, id_version):
 		('share/doc/python-pyfirewall', ['AUTHORS', 'BUGS', 'CHANGELOG', 
 											'COPYING', 'README.md', 'TODO']),
 		('/etc/init.d', ['config/demon/firewall'],),
-		('/etc/pyfirewall/%s' % VERSION, glob_files('config/rules/*'),),
+		('/etc/pyfirewall', glob_files('config/rules/*'),),
 		('/etc/sysctl.d', ['config/sysctl.conf'],),
 				]
 	
@@ -104,7 +104,7 @@ def LINUX_DEBIAN_UBUNTU(id_distro, id_version):
 		license = LICENSE,
 		platforms = ['Gnu/Linux (%s %s)' % (id_distro, id_version)],
 		scripts = [NAME],
-		packages = ['firewall_package'],
+		packages = ['pyfirewall_pack'],
 		data_files = DATA_FILES,
 		install_requires = DEPENDENCIES,
 		)

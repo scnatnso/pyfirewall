@@ -13,29 +13,36 @@
 #########################################################
 
 """
-This daemon is running during the system startup and if called with some 
-command arg, but However, for be running, it must have execution permissions .
+This daemon is running automatically during the system startup and if called 
+with some command arg, but However, for be running, it must have execution 
+permissions .
 
 It must be locate in /etc/init.d or /etc/rc.d, this depend what init-systems
 is used: System V or BSD style .
 """
 
-import os
-
-if os.getuid() != 0:
-	print "\n\n\033[31;1mPermission denied! Are you root?\033[0m"
-	sys.exit(1)
-
-from subprocess import check_call
-import sys
-from firewall_package.personalized_rules import main_menu, load_all, status
-
-USAGE = ("\033[1mUsage: pyfirewall "
-		 "{reload|restart|start|stop|block|status|settings|version}\033[0m")
-
 VERSION = '0.13'
 
-######################################################### start functions
+USAGE = ("\033[1m\nUsage: pyfirewall "
+		 "{reload|restart|start|stop|block|status|settings|version}\033[0m\n")
+
+pathDB = ('/etc/pyfirewall/private')
+pathrule = ('/etc/pyfirewall')
+
+import os
+import subprocess
+import sys
+
+from pyfirewall_pack.settings import Main_Menu
+from pyfirewall_pack.load_custom_rules import load_custom
+from pyfirewall_pack.conf_parser import parser
+
+if os.getuid() != 0:
+	print "\033[31;1mPermission denied!\033[0m You are not root"
+	sys.exit(1)
+	
+	
+	
 def start():
 	"""
 	During the Gnu/Linux OS startup, this is executed default.
@@ -44,12 +51,24 @@ def start():
 	"""
 	print "\033[32;1mAttivazione Firewall:\033[0m"
 	
-	check_call('/etc/pyfirewall/%s/parser_loader start' % (VERSION), shell = True)
+	output_parser = parser(pathrule)
+	
+	starting = output_parser[0]
+	interfaces = output_parser[1]
+		
+	try:
+		
+		subprocess.check_call('%s/%s %s' % (pathrule, starting, interfaces), 
+																shell=True)
+		
+	except subprocess.CalledProcessError:
+		
+		sys.exit("\033[31;1m[ERROR]\033[0m subprocess.CalledProcessError: "
+										"firewall daemon fail on 'start'")
+	
+	load_custom(pathDB) # It run the need where are applied to all settings
 	
 	print "\033[32;1m...[OK]\033[0m"
-	
-	load_all() # It run the need where are applied to all settings
-	
 	
 def stop():
 	"""
@@ -64,15 +83,20 @@ def stop():
 	"""
 	print "\033[31;1mDisattivazione Firewall:\033[0m"
 	
-	check_call('/etc/pyfirewall/%s/parser_loader stop' % (VERSION), shell = True)
+	try:
+		
+		subprocess.check_call('%s/stop stop' % (pathrule), shell=True)
+		
+	except subprocess.CalledProcessError:
+		
+		sys.exit("\033[31;1m[ERROR]\033[0m subprocess.CalledProcessError: "
+											"firewall daemon fail on 'stop'")
 	
 	print "\033[31;1m...[OK]\033[0m"
 	
 ########################################################## end functions
 	
 if len(sys.argv) == 1:
-	
-	print "\n\033[1mIl programma necessita di un argomento/parametro:\033[0m"
 	
 	sys.exit(USAGE)
 
@@ -101,31 +125,56 @@ if len(sys.argv) == 2:
 	elif sys.argv[1] == "block":
 		"""
 		WARNING: This prevents all internet connections
-		See parser_loader script for explanation
+		See start script for explanation
 		"""
-		print "\033[31;1mAttenzione, blocco globale impostato:\033[0m"
+		print "\033[31;1mImposto blocco globale:\033[0m"
 		
-		check_call('/etc/pyfirewall/%s/parser_loader block' % (VERSION), shell = True)
+		try:
+		
+			subprocess.check_call('%s/block_network block' % (pathrule), shell=True)
+		
+		except subprocess.CalledProcessError:
+			
+			sys.exit("\033[31;1m[ERROR]\033[0m subprocess.CalledProcessError: "
+											"firewall daemon fail on 'block'")
 		
 		print "\033[31;1m...[OK]\033[0m"
 		
 		sys.exit()
 		
+		
 	elif sys.argv[1] == "status":
-		
-		status()
-		
+		"""
+		Shows the formatted output of the command > iptables -nvL
+		"""
+		print "\033[34;1m============================================\033[0m"
+		print "\033[36m"
+		subprocess.call(['iptables', '-nvL'])
+		#print "check_call('iptables -nvL', shell=True)"
+		print ""
+		print "\033[34;1m============================================\033[0m"
 		sys.exit()
+		
 		
 	elif sys.argv[1] == "settings":
 		
-		main_menu()
+		opt = Main_Menu(pathDB)
+		
+		if r.outPut != None:
+			subprocess.check_call('iptables %s' % opt.outPut, shell=True)
+			#print 'test 1: %s' % opt.outPut
+			
+		if r.outPut2 != None:
+			subprocess.check_call('iptables %s' % opt.outPut2, shell=True)
+			#print 'test 2: %s' % opt.outPut2
 		
 		sys.exit()
 		
+		
 	elif sys.argv[1] == "version" or sys.argv[1] == "-v":
 		
-		print "pyfirewall: Version 0.13 date 04/02/2015 (C) 2015 Gianluca Pernigotto."
+		print ("\npyfirewall: Version %s date 04/02/2015 (C) 2015 Gianluca "
+									"Pernigotto.\n" % VERSION)
 		
 		sys.exit()
 		

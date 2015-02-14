@@ -1,21 +1,30 @@
 #!/bin/bash
 #
-# /etc/pyfirewall/0.12/rules_single_interface.conf 
 #
-# VERSION: (Ver.0.12) Tuesday, 14 August 2012
-# DESCRIPTION: configurator rules list for single interface
-# 
+#########################################################
+# Name: start
+# Porpose: execute iptables command rules for single interface
+# Writer: Gianluca Pernigoto <jeanlucperni@gmail.com>
+# Copyright: (c) 2013-2015 Gianluca Pernigoto <jeanlucperni@gmail.com>
+# license: GPL3
+# Version: (V0.12) Tuesday, 14 August 2012
+# Rev (v0.13) 10/02/2015
+#
 # Inspired to Simple Stateful Firewall:
 # "https://wiki.archlinux.org/index.php/Simple_stateful_firewall"
+#########################################################
 #
-# AUTHOR: Gianluca Pernigotto <jeanlucperni@gmail.com>
-#
+# DESCRIPTION:
 # The content iptables rules in this file are set for desktop 
 # use and will concern your personal firewall.
-# Edit this file for custom use, for add your personal rules. 
-# The following rules and instructions are secure way for base
-# start with any net interfaces. Also, You can setting your list
-# of specific interfaces by editing "/etc/pyfirewall/0.12/iface.conf".
+# Edit this file for custom use for add your personal rules. 
+# The following rules are secure way for a basic start with any 
+# net interfaces. Also, You can set a match of the same type
+# by editing "/etc/pyfirewall/0.12/iface.conf" and uncommment 
+# "interface_all" and comment the rest or uncommment "interface_match=eth+". 
+# and comment the rest. 
+# See iface.conf file for details.
+
 
 if [ $(id -u) -ne 0 ]; then
         echo -e "\nPermission denied\n"
@@ -28,11 +37,9 @@ ipt=`which iptables`
 mpb=`which modprobe`
 
 
-
-
 	#################################
-        # Caricamento Moduli del Kernel #
-        #################################
+	# Caricamento Moduli del Kernel #
+	#################################
 	$mpb ip_tables
 	$mpb iptable_filter
 	$mpb iptable_nat
@@ -52,36 +59,37 @@ mpb=`which modprobe`
 	$mpb ipt_state
 	$mpb ipt_tos
 	$mpb iptable_mangle
-		
+	
 	############################
-        # Reset delle impostazioni #
-        ############################		
+	# Reset delle impostazioni #
+	############################
 	$ipt -t nat -F
-        $ipt -t nat -X
-        $ipt -t nat -Z
+	$ipt -t nat -X
+	$ipt -t nat -Z
 
-        $ipt -t mangle -F
-        $ipt -t mangle -X
-        $ipt -t mangle -Z
+	$ipt -t mangle -F
+	$ipt -t mangle -X
+	$ipt -t mangle -Z
 
-        $ipt -F
-        $ipt -X
-        $ipt -Z
-		
+	$ipt -F
+	$ipt -X
+	$ipt -Z
+	
 	##############################
 	# Creating necessary chains 
 	##############################
+	# this custom chains are used for settings open/close tcp/udp doors
 	$ipt -N TCP
-	$ipt -N UDP
-		
+	$ipt -N UDP 
+	
 	################################
-        # Impostazione Policy standard #
-        ################################
+	# Impostazione Policy standard #
+	################################
 	$ipt -P INPUT   DROP
 	$ipt -P FORWARD DROP
 	$ipt -P OUTPUT  ACCEPT
 
-# You can starting here for editing the following list: 
+### You can starting here for editing the following list: ###
 		
 	#############################################################################
 	# Abilitazione traffico in entrata solo se relativo a pacchetti in risposta #
@@ -125,7 +133,7 @@ mpb=`which modprobe`
 	$ipt -A INPUT $IFACE -j REJECT --reject-with icmp-proto-unreachable
 
 
-## THE OPEN CHAINS ( this can set direct from program 'pyfirewall setting' option') ##
+### THE OPEN CHAINS ( this can set direct from program 'pyfirewall setting' option') ###
 	#############################################################################
 	# Opening ports to incoming connections for server (decommentare solo se necessario)
 	############################################################################# 
@@ -159,7 +167,7 @@ mpb=`which modprobe`
 	$ipt -I INPUT ! -i lo -s 127.0.0.0/8 -j DROP
 		
 
-## "HIDE" YOUR COMPUTER  ##
+### "HIDE" YOUR COMPUTER  ###
 	# Block Ping Request
 	$ipt -A INPUT $IFACE -p icmp --icmp-type echo-request -m limit --limit 30/min --limit-burst 8 -j ACCEPT
 	$ipt -A INPUT $IFACE -p icmp --icmp-type echo-request -j DROP
@@ -171,9 +179,5 @@ mpb=`which modprobe`
 	$ipt -I UDP $IFACE -p udp -m recent --update --seconds 60 --name UDP-PORTSCAN -j REJECT --reject-with port-unreach
 	$ipt -D INPUT $IFACE -p udp -j REJECT --reject-with icmp-port-unreach
 	$ipt -A INPUT $IFACE -p udp -m recent --set --name UDP-PORTSCAN -j REJECT --reject-with icmp-port-unreach
-	exit 0
-
- 
-
-
-
+	
+exit 0

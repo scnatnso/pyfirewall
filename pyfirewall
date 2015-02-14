@@ -10,20 +10,19 @@
 # Version: (V0.12) Tuesday, 14 August 2012
 # Rev (v0.13) 06/02/2015
 #
-# DESCRIPTION:
+# LONG DESCRIPTION:
+#
 # This script is a convenient and reliable way for running the firewall 
 # daemon localized in /etc/rc.d/rc.firewall or /etc/init.d/firewall,
 # this depend what init-systems is used (System V or BSD style ?).
 # Also, it is check for a regular starting of pyfirewall program .
 ##########################################################
 
-version=0.13
-path2=/etc/pyfirewall/$version
-path3=/etc/sysctl.conf
+path2=/etc/pyfirewall
 
 # you must be root
 if [ $(id -u) -ne 0 ]; then
-        echo -e "\nPermission denied\n"
+        echo -e "\033[31;1mPermission denied !\033[0m you must be root"
         exit 1
 fi
 
@@ -40,25 +39,27 @@ else
 	exit 1
 fi
 
-
 # check existence files:
-if [ ! -e "$path2/parser_loader" ]; then
-	echo -e "[ERROR]: $path2/parser_loader\nNot exist"
+if [ ! -e "$path2/start" ]; then
+	echo -e "[ERROR]: $path2/start script\nNot exist"
 	exit 1
-elif [ ! -e "$path2/rules_single_interface.conf" ]; then
-	echo -e "[ERROR]: $path2/rules_single_interface.conf\nNot exist"
+elif [ ! -e "$path2/start_types" ]; then
+	echo -e "[ERROR]: $path2/start_types script\nNot exist"
 	exit 1
-elif [ ! -e "$path2/rules_multi_interfaces.conf" ]; then
-	echo -e "[ERROR]: $path2/rules_multi_interfaces.conf\nNot exist"
+elif [ ! -e "$path2/stop" ]; then
+	echo -e "[ERROR]: $path2/stop script\nNot exist"
 	exit 1
-elif [ ! -e "$path3" ]; then
-	echo -e "[WARNING]: $path3\nThis file not exist"
+elif [ ! -e "$path2/block" ]; then
+	echo -e "[ERROR]: $path2/block script\nNot exist"
+	exit 1
+elif [ ! -e "$path2/iface.conf" ]; then
+	echo -e "[ERROR]: $path3\nThis file not exist"
 fi
 
 bool=0 # is true
 
 # permission of execution value
-for n in {"$path1","$path2/parser_loader","$path2/rules_single_interface.conf","$path2/rules_multi_interfaces.conf"}                      
+for n in {"$path1","$path2/start","$path2/start_types","$path2/stop","$path2/block"}                      
 do
 	if [ ! -x "$n" ]; then
 		bool=1 # is false
@@ -69,7 +70,7 @@ done
 
 if [ $bool = 1 ]; then
 	exit 1
-fi	
+fi
 
 # run daemon
 $path1 $1

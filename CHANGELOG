@@ -1,4 +1,13 @@
 +--------------------------------+
+february 14 2015  Version 0.13
++--------------------------------+
+- Change code for many python and bash script and improved code organization
+
+- Improved the status exit control
+
+- added compatibility for init systems: rc.d and  init.d
+
++--------------------------------+
 Friday, August 14 2012  Version 0.12
 +--------------------------------+
 
