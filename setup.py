@@ -26,7 +26,12 @@ VERSION = '0.13'
 LICENSE = 'Gnu GPL3 (See LICENSE)'
 DESCRIPTION = 'Firewall iptables based'
 
-LONG_DESCRIPTION = """Firewall for single machines with Gnu/Linux's OS.
+LONG_DESCRIPTION = """ Pyfirewall is a user-interface based on iptables that facilitates 
+the configuration of your firewall. Can work with any type of network 
+interface and is designed to handle a single PC in a normal home network.
+Immediately provides the necessary rules to make stateful firewall and 
+quick customizations such as management of TCP/UDP ports and web-sites 
+filtering.
 """
 URL = 'https://github.com/jeanslack/pyfirewall'
 
@@ -86,10 +91,10 @@ def LINUX_DEBIAN_UBUNTU(id_distro, id_version):
 		('share/man/man8', ['man/pyfirewall.8.gz'],), 
 		('share/doc/python-pyfirewall', glob_files('docs/*'),),
 		('share/doc/python-pyfirewall', ['AUTHORS', 'BUGS', 'CHANGELOG', 
-											'COPYING', 'README.md', 'TODO']),
+		'COPYING', 'README.md', 'TODO']),
 		('/etc/init.d', ['config/demon/firewall'],),
 		('/etc/pyfirewall', glob_files('config/rules/*'),),
-		('/etc/sysctl.d', ['config/sysctl.conf'],),
+		('/etc/sysctl.d', ['config/pyfirewall10net.conf'],),
 				]
 	
 	DEPENDENCIES = ['python >=2.6']

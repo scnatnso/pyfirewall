@@ -12,6 +12,15 @@
 # Rev (v0.13) 04/02/2015
 #########################################################
 
+### BEGIN INIT INFO
+# Provides:      firewall
+# Required-Start:   $network $remote_fs $syslog
+# Required-Stop:
+# Default-Start:   S
+# Default-Stop:
+# Short-Description:   Activate iptables.
+### END INIT INFO
+
 """
 This daemon is running automatically during the system startup and if called 
 with some command arg, but However, for be running, it must have execution 

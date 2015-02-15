@@ -17,7 +17,7 @@ Execute services or rules that was are set with 'pyfirewall settings'
 command. if one of the databases is empty do not run commands, of course 
 """
 
-from subprocess
+import subprocess
 import shelve
 
 
